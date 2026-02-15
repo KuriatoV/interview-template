@@ -53,8 +53,9 @@ const rerendersRoute = createRoute({
 const testComponentRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/react/testComponent',
-  component: ()=> <TestComponentPage/>,
+  component: () => <TestComponentPage />,
 });
+
 const userMessagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/js/user-messages',

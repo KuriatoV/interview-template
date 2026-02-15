@@ -1,33 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 
-function useHover<T extends HTMLElement = HTMLElement>() {
+// implement the useHover hook
+
+function useHover() {
   // Your code here
   // Return [ref, isHovered]
-  const ref = useRef<T>(null);
-  const [isButtonHovered, setIsButtonHovered] = useState<boolean>(false);
-
-  useEffect(() => {
-    const node = ref.current;
-    const handleMouseEnter = () => setIsButtonHovered(true);
-    const handleMouseLeave = () => setIsButtonHovered(false);
-    if (node) {
-      node.addEventListener('mouseenter', handleMouseEnter);
-      node.addEventListener('mouseleave', handleMouseLeave);
-    }
-    return () => {
-      if (node) {
-        node.removeEventListener('mouseenter', handleMouseEnter);
-        node.removeEventListener('mouseleave', handleMouseLeave);
-      }
-    };
-  }, []);
-  return [ref, isButtonHovered] as const;
 }
 
 export default function App() {
-  const [buttonRef, isButtonHovered] = useHover<HTMLButtonElement>();
-  const [cardRef, isCardHovered] = useHover<HTMLDivElement>();
-  const [imageRef, isImageHovered] = useHover<HTMLDivElement>();
+  // const [buttonRef, isButtonHovered] = useHover<HTMLButtonElement>();
+  // const [cardRef, isCardHovered] = useHover<HTMLDivElement>();
+  // const [imageRef, isImageHovered] = useHover<HTMLDivElement>();
 
   return (
     <div className="flex flex-col gap-6">
@@ -41,7 +24,9 @@ export default function App() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Demo 1: Button</h3>
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Demo 1: Button
+        </h3>
         <button
           ref={buttonRef}
           className={`rounded-lg px-5 py-2.5 text-sm font-medium transition-all ${
@@ -67,7 +52,9 @@ export default function App() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Demo 2: Card</h3>
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Demo 2: Card
+        </h3>
         <div
           ref={cardRef}
           className={`rounded-xl border p-5 transition-all ${
@@ -77,7 +64,9 @@ export default function App() {
           }`}
         >
           <h4 className="font-semibold">Interactive Card</h4>
-          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Hover over this card to see the effect</p>
+          <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            Hover over this card to see the effect
+          </p>
         </div>
         <p className="text-sm text-gray-600 dark:text-gray-400">
           Status:{' '}
@@ -94,7 +83,9 @@ export default function App() {
       </div>
 
       <div className="flex flex-col gap-3">
-        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Demo 3: Image</h3>
+        <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+          Demo 3: Image
+        </h3>
         <div
           ref={imageRef}
           className={`flex items-center justify-center rounded-xl border h-32 text-3xl transition-all ${
