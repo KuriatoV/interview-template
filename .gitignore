@@ -5,4 +5,4 @@ dist
 *.local
 .DS_Store
 *.tsbuildinfo
-*.answers.*
+# *.answers.*
