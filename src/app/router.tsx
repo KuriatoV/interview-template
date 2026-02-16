@@ -5,6 +5,7 @@ import { LifecyclePage } from '@/app/pages/LifecyclePage';
 import { RerendersPage } from '@/app/pages/RerendersPage';
 import { UserMessagesPage } from '@/app/pages/UserMessagesPage';
 import { SerializerPage } from '@/app/pages/SerializerPage';
+import { TestComponentPage } from './pages/TestComponentPage';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -49,7 +50,11 @@ const rerendersRoute = createRoute({
   path: '/react/rerenders',
   component: RerendersPage,
 });
-
+const testComponentRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/react/testComponent',
+  component: ()=> <TestComponentPage/>,
+});
 const userMessagesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/js/user-messages',
@@ -69,6 +74,7 @@ const routeTree = rootRoute.addChildren([
   rerendersRoute,
   userMessagesRoute,
   serializerRoute,
+  testComponentRoute,
 ]);
 
 export const router = createRouter({ routeTree });

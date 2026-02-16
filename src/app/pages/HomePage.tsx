@@ -10,6 +10,7 @@ const problems: PracticeItem[] = [
   { title: 'useHover', path: '/react/use-hover', category: 'React' },
   { title: 'Lifecycle', path: '/react/lifecycle', category: 'React' },
   { title: 'Rerenders', path: '/react/rerenders', category: 'React' },
+  { title: 'Review Component', path: '/react/testComponent', category: 'React' },
   { title: 'Sequential Promises', path: '/js/sequential-promises', category: 'JS' },
   { title: 'User Messages', path: '/js/user-messages', category: 'JS' },
   { title: 'Serializer', path: '/js/serializer', category: 'JS' },
