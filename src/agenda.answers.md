@@ -46,21 +46,35 @@
 
 **Expected:** Трекинг ошибок (Sentry) — автоматический сбор uncaught exceptions и unhandled rejections, группировка по stack trace, привязка к релизу через release/commit. Source maps — загружать в Sentry приватно, не отдавать клиенту. Метрики производительности: Core Web Vitals (LCP, INP, CLS) через web-vitals библиотеку или RUM-сервисы (Datadog RUM, New Relic Browser). Кастомные метрики — время загрузки критичных API-запросов, время до интерактивности конкретных фич. Алертинг — порог по error rate (например, >1% сессий с JS-ошибкой), деградация Web Vitals по перцентилям (p75, p95). Логирование — structured logs в консоль, которые агрегируются на бэкенде. Feature flags + мониторинг — связка для безопасного раскатывания фич с возможностью быстрого отката.
 
+### 1.8 SOLID и GRASP / паттерны на фронте [senior]
+
+**Q:** Как ты применяешь SOLID или GRASP на фронтенде? Приведи примеры.
+
+**Expected:**
+
+- **S (Single Responsibility):** компонент только рендерит, логика вынесена в хук или сервис. Пример: `UserList` только отображает список, `useUsers()` — загрузка и кеш.
+- **O (Open/Closed):** расширение без правки кода — композиция (children, render props), конфиг (таблица колонок, маппинг полей). Пример: таблица принимает массив колонок с `render`, добавление колонки без изменения компонента таблицы.
+- **L (Liskov):** подтипы подставляемы. Пример: все варианты кнопки (`Button`, `IconButton`) принимают те же базовые пропсы (onClick, disabled), не ломают контракт.
+- **I (Interface Segregation):** узкие интерфейсы. Пример: не один «богоподобный» контекст со всем стейтом, а отдельные `ThemeContext`, `AuthContext` — компонент подписывается только на нужное.
+- **D (Dependency Inversion):** зависимость от абстракций. Пример: компонент получает `fetchUsers: () => Promise<User[]>` через проп или контекст, а не импортирует конкретный API-модуль — проще тесты и подмена источника данных.
+- **GRASP (Information Expert, Creator, Controller):** эксперт — данные рядом с теми, кто ими владеет (форма владеет полями → валидация в форме или рядом). Creator — фабрика/хук создаёт сущности (например, `useForm` создаёт объект формы). Controller — оркестрация в одном месте (страница/контейнер координирует данные и передаёт в презентационные компоненты).
+
 ---
 
 ## Block 2. Browser & Network (10-15 min, oral)
 
-### 2.1 Browser Storages [middle+]
+### 2.1 Authentication vs Authorization [middle+]
+
+**Q:** В чём разница между аутентификацией и авторизацией?
+
+**Expected:** Аутентификация — установление личности («кто ты?»): логин/пароль, OAuth, JWT, сессия. Авторизация — проверка прав доступа («что тебе разрешено?»): роли, permissions, проверка на бэкенде перед выполнением действия. На фронте храним токен/сессию, на бэкенде при каждом запросе проверяем и аутентификацию (валидный ли токен), и авторизацию (доступен ли ресурс этому пользователю).
+
+### 2.2 Browser Storages [middle+]
 
 **Q:** Какие способы хранения данных в браузере ты знаешь? В чём разница между ними и когда что использовать?
 
 **Expected:** `localStorage` — синхронный, до 5-10 MB, данные сохраняются между сессиями, доступен только в рамках одного origin. `sessionStorage` — то же самое, но данные живут только в рамках вкладки/сессии. `cookies` — отправляются с каждым HTTP-запросом к серверу, ограничение ~4 KB, есть атрибуты `HttpOnly`, `Secure`, `SameSite`, `Expires`/`Max-Age`. `IndexedDB` — асинхронная NoSQL-база в браузере, большие объёмы данных (сотни MB), подходит для офлайн-приложений и кеширования. `Cache API` (Service Worker) — для кеширования HTTP-ответов, основа PWA и офлайн-стратегий.
-
-### 2.2 Cookies deep dive [middle+]
-
-**Q:** Расскажи подробнее про cookies. Какие атрибуты знаешь? Что такое HttpOnly, Secure, SameSite?
-
-**Expected:** `HttpOnly` — cookie недоступна из JS (`document.cookie`), защита от XSS. `Secure` — отправляется только по HTTPS. `SameSite=Strict` — cookie не отправляется при cross-site запросах. `SameSite=Lax` — отправляется при top-level навигации (GET). `SameSite=None; Secure` — отправляется всегда (нужно для third-party). `Expires`/`Max-Age` — время жизни; без них cookie — session cookie (удаляется при закрытии браузера). `Domain`/`Path` — scope, где cookie доступен.
+`HttpOnly` — cookie недоступна из JS (`document.cookie`)
 
 ### 2.3 Rendering [middle+]
 
@@ -75,18 +89,17 @@
 - CORS: что это, preflight-запросы, заголовки `Access-Control-*`?
 - **Expected:** HTTP/2 = мультиплексирование, сжатие заголовков, server push. HTTP/3 = QUIC (на базе UDP), быстрое установление соединения. CORS контролируется браузером, сам по себе не является механизмом безопасности.
 
-### 2.5 Security [senior]
-
-- XSS (stored, reflected, DOM-based) — как предотвратить?
-- CSRF — как работает, токены, SameSite cookies?
-- CSP — что это и как настроить?
-- **Expected:** XSS: санитизация ввода, экранирование вывода, использование CSP. CSRF: SameSite cookies, anti-CSRF токены. CSP: вайтлист разрешённых источников скриптов/стилей.
-
-### 2.6 Performance [senior]
+### 2.5 Performance [senior]
 
 - Core Web Vitals: LCP, INP (заменил FID), CLS — что это?
 - Как измерить и улучшить каждый?
 - **Expected:** LCP: оптимизация critical rendering path, preload шрифтов/изображений. INP: уменьшение времени выполнения JS, использование `requestIdleCallback`. CLS: явные размеры для изображений/рекламы, избегать сдвигов макета.
+
+### 2.6 GraphQL vs REST [middle+]
+
+**Q:** Сравни GraphQL и REST — плюсы и минусы.
+
+**Expected:** REST — много endpoint'ов, сервер решает какие данные вернуть; кеширование по URL, простой контракт. GraphQL — один endpoint, клиент сам запрашивает нужные поля; меньше overfetching/underfetching, но сложнее кеширование и контроль нагрузки. REST проще для простых CRUD; GraphQL удобен при сложных связях данных и мобильных клиентах с разными потребностями.
 
 ---
 
@@ -109,12 +122,6 @@
 - **Practice file:** `src/practice/js/serializer/serializer.tsx`
 - **Topic:** recursive types, recursion with depth limit, `typeof` / `Array.isArray`
 - **Follow-up (senior):** Как бы ты обработал циклические ссылки? (подсказка: `WeakSet`)
-
-### 3.4 Debounce / Throttle [senior]
-
-- **Practice file:** `src/practice/js/debounce/debounce.tsx`
-- **Topic:** implement `debounce` from scratch, understand timing, cleanup, cancel/flush
-- **Follow-up:** В чём разница между debounce и throttle? Что такое leading и trailing edge?
 
 ---
 
@@ -142,29 +149,62 @@
 
 ## Block 5. React (15-20 min)
 
-### 5.1 Custom hooks [middle+]
+### 5.1 Virtual DOM & Reconciliation [middle+]
+
+**Q:** Опиши процесс обновления Virtual DOM. Что такое Reconciliation?
+
+**Expected:** Две фазы:
+
+- **Render Phase:** инициирование обновления → создание дерева Work In Progress → diffing (сравнение старого и нового дерева) → работа с ключами (`key`) для идентификации элементов → сбор побочных эффектов → учёт приоритетов (Fiber).
+- **Commit Phase:** применение изменений к реальному DOM → вызовы lifecycle-методов и хуков (`useEffect`, `useLayoutEffect`) → batch updates (группировка обновлений).
+
+### 5.2 Synthetic Events [middle+]
+
+**Q:** Зачем React использует Synthetic Events, если уже есть нативные DOM Events?
+
+**Expected:** Кросс-браузерная совместимость — единый API поверх нативных событий. Event delegation — React вешает один обработчик на корневой элемент, а не на каждый DOM-узел. Пулинг событий (до React 17) — переиспользование объектов для снижения нагрузки на GC. С React 17 события делегируются на root-контейнер, а не на `document`.
+
+### 5.3 Custom hooks [middle+]
 
 - **Practice file:** `src/practice/react/1-useHover/useHover.tsx`
 - **Topics:** rules of hooks, cleanup in `useEffect`, ref vs state
 
-### 5.2 Lifecycle & useEffect [middle+]
+### 5.4 Lifecycle & useEffect [middle+]
 
 - **Practice file:** `src/practice/react/2-lifecycle/Lifecycle.tsx`
 - **Topics:** mount/unmount order, dependency array, strict mode double-invoke
 
-### 5.3 Re-render optimization [middle+]
+### 5.5 Re-render optimization [middle+]
 
 - **Practice file:** `src/practice/react/3-rerenders/Rerenders.tsx`
 - **Topics:** `React.memo`, `useMemo`, `useCallback`, composition pattern (children prop)
 
-### 5.4 State management (oral) [senior]
+### 5.6 Error Boundaries [middle+]
 
-- Когда Context API, а когда Zustand/Redux/Jotai?
-- «Prop drilling» vs «context hell» — как балансировать?
-- **Expected:** Context для редко обновляемых данных (тема, авторизация). Внешние сторы для частых или расшаренных обновлений. Принцип колокации — держать стейт рядом с тем, где он используется.
+**Q:** Что такое Error Boundary? Когда ловит ошибки, когда нет?
 
-### 5.5 Concurrent React (oral) [senior]
+**Expected:** Классовый компонент с `getDerivedStateFromError` / `componentDidCatch` — ловит ошибки в рендере и lifecycle потомков. Не ловит: события (нужен try/catch), асинхронный код, ошибки в самом boundary. Один глобальный + по границам фич/роутов — чтобы падение блока не ломало всю страницу.
 
-- Что такое `useTransition`, `useDeferredValue`, Suspense boundaries?
-- React Server Components vs SSR — в чём разница?
-- **Expected:** RSC выполняется на сервере, отправляет сериализованное дерево компонентов (без гидрации). SSR отправляет HTML-строку, потом гидрирует. `useTransition` помечает обновления как неприоритетные, сохраняя отзывчивость UI.
+### 5.7 Advanced Hooks [senior]
+
+**Q:** Расскажи про `useImperativeHandle`, `useTransition`, `useDeferredValue` — когда и зачем?
+
+**Expected:** `useImperativeHandle` — кастомизация ref, который родитель получает через `forwardRef`; используется для императивного API компонента (например, `.focus()`, `.scrollTo()`). `useTransition` — помечает обновление как неприоритетное, UI остаётся отзывчивым во время тяжёлого ре-рендера. `useDeferredValue` — откладывает обновление значения до момента, когда браузер освободится; похоже на debounce, но управляется планировщиком React.
+
+### 5.8 Suspense & Virtualization [senior]
+
+**Q:** Что такое Suspense? Когда нужна виртуализация списков?
+
+**Expected:** Suspense — декларативная обработка асинхронных зависимостей (lazy-компоненты, data fetching). Оборачиваем в `<Suspense fallback={...}>`, React показывает fallback пока данные загружаются. Вложенные Suspense boundaries позволяют гранулярно управлять loading-состояниями. Виртуализация (react-window, react-virtuoso, tanstack-virtual) — рендерить только видимые элементы списка; нужна при тысячах элементов, снижает количество DOM-узлов и ускоряет рендер.
+
+### 5.9 State management (oral) [senior]
+
+**Q:** Когда Context API, а когда Zustand/Redux/Jotai? «Prop drilling» vs «context hell» — как балансировать?
+
+**Expected:** Context для редко обновляемых данных (тема, авторизация). Внешние сторы для частых или расшаренных обновлений. Принцип колокации — держать стейт рядом с тем, где он используется.
+
+### 5.10 React Server Components (oral) [senior]
+
+**Q:** React Server Components vs SSR — в чём разница?
+
+**Expected:** RSC выполняется на сервере, отправляет сериализованное дерево компонентов (без гидрации). SSR отправляет HTML-строку, потом гидрирует. RSC позволяет уменьшить размер клиентского бандла — серверные компоненты не попадают в JS-бандл. `use client` / `use server` — директивы для разделения серверного и клиентского кода.
