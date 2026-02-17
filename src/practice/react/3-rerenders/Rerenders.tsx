@@ -25,14 +25,13 @@ function HeavyComponent() {
   );
 }
 
-function CountDisplay() {
+function CountDisplay({ handleIncrement, count }: { handleIncrement: () => void; count: number }) {
   const renders = useRenderCount();
-  const [count, setCount] = useState(0);
 
   return (
     <>
       <button
-        onClick={() => setCount((c) => c + 1)}
+        onClick={handleIncrement}
         className="self-start rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-900 dark:hover:bg-gray-200"
       >
         Increment
@@ -59,6 +58,7 @@ function RenderBadge({ count }: { count: number }) {
 
 export default function Rerenders() {
   const renders = useRenderCount();
+  const [count, setCount] = useState(0);
 
   return (
     <div className="flex flex-col gap-6">
@@ -75,7 +75,7 @@ export default function Rerenders() {
       </div>
 
       <div className="flex flex-col gap-4">
-        <CountDisplay />
+        <CountDisplay handleIncrement={() => setCount((c) => c + 1)} count={count} />
         <HeavyComponent />
       </div>
     </div>
