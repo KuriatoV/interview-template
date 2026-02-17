@@ -7,7 +7,12 @@
 // [1, 2, {a: 3, b: 4}, [5, 6]]
 // () => "some string"
 
-type Serializable = unknown; // TODO: replace with a proper type
+type Serializable =
+  | number
+  | string
+  | ((...args: unknown[]) => unknown)
+  | Serializable[]
+  | { [key: string]: Serializable };
 
 // Returns a string representation of the given `value` of `Serializable` type,
 // up to the nesting level specified in `maxNestingLevel`.
@@ -25,12 +30,11 @@ type Serializable = unknown; // TODO: replace with a proper type
 // When maxNestingLevel is reached, nested structures are replaced with "..." :
 // serialize({a: {b: {c: 1}}}, 1) → "Object(a = Object(b = ...))"
 //
+// in case of circular references, the function returns '[Circular]'
 // Tip: /\s/g — regexp for removing whitespace, tabs, newlines, etc.
 
-function serialize(value: Serializable, maxNestingLevel = 2): string {
-  // TODO: implement
-  console.log(value, maxNestingLevel);
-  return '';
+function serialize(value: Serializable, maxNestingLevel = 2, seen?: any): string {
+  //TODO: implement
 }
 
 // ── Test cases ──────────────────────────────────────────────
@@ -65,6 +69,12 @@ const testCases: Array<{ input: Serializable; depth?: number; label: string }> =
     },
     label: 'mixed object',
   },
+
+  (() => {
+    const arr: Serializable[] = [1, { name: 'inner', back: null as unknown as Serializable }];
+    (arr[1] as Record<string, Serializable>).back = arr; // объект внутри массива ссылается на сам массив → [Circular]
+    return { input: arr, label: 'array: element refs array (circular)' };
+  })(),
 ];
 
 export const SerializerComponent = () => {
@@ -123,6 +133,12 @@ export const SerializerComponent = () => {
             <strong>Depth exceeded</strong> — replace with{' '}
             <code className="text-xs bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5">...</code>
           </li>
+          <li>
+            <strong>Circular reference</strong> — replace with{' '}
+            <code className="text-xs bg-gray-100 dark:bg-gray-800 rounded px-1 py-0.5">
+              [Circular]
+            </code>
+          </li>
         </ul>
       </section>
 
@@ -156,8 +172,14 @@ export const SerializerComponent = () => {
                     <td className="px-4 py-2 text-gray-600 dark:text-gray-300">{tc.label}</td>
                     <td className="px-4 py-2 font-mono text-xs text-gray-600 dark:text-gray-300 max-w-[200px] truncate">
                       {typeof tc.input === 'function'
-                        ? tc.input.toString().replace(/\s+/g, ' ').slice(0, 60)
-                        : JSON.stringify(tc.input)}
+                        ? tc.input.toString()?.replace(/\s+/g, ' ').slice(0, 60)
+                        : (() => {
+                            try {
+                              return JSON.stringify(tc.input);
+                            } catch {
+                              return serialize(tc.input)?.replace(/\s+/g, ' ').slice(0, 80);
+                            }
+                          })()}
                     </td>
                     <td className="px-4 py-2 font-mono text-xs">
                       {result ? (
